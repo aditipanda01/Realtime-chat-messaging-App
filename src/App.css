@@ -397,7 +397,8 @@
     display: flex;
     flex-direction: column;
     background: var(--primary-color);
-    width: 240px;
+    width: 247px;
+ 
   }
   
   .icon1__inner {
