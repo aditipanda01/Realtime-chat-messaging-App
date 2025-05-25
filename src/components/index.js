@@ -1,2 +1,4 @@
-export { default as ChanelContainer } from './ChanelContainer';
-export { default as ChanelListContainer } from './ChanelListContainer';
+export { default as ChannelContainer } from './ChannelContainer';
+export { default as ChannelListContainer } from './ChannelListContainer';
+export { default as ChannelSearch } from './ChannelSearch';
+export { default as TeamChannelList } from './TeamChannelList';
