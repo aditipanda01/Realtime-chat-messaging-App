@@ -50,8 +50,15 @@ const UserList = ({ setSelectedUsers }) => {
     useEffect(() => {
         const getUsers = async () => {
             if(loading) return;
+            
+            // Check if client is connected
+            if(!client || !client.userID) {
+                console.log('Client not connected or user not authenticated');
+                return;
+            }
 
             setLoading(true);
+            setError(false);
             
             try {
                 const response = await client.queryUsers(
@@ -60,19 +67,23 @@ const UserList = ({ setSelectedUsers }) => {
                     { limit: 8 } 
                 );
 
-                if(response.users.length) {
+                if(response.users && response.users.length) {
                     setUsers(response.users);
+                    setListEmpty(false);
                 } else {
+                    setUsers([]);
                     setListEmpty(true);
                 }
             } catch (error) {
+               console.error('Error loading users:', error);
                setError(true);
+               setUsers([]);
             }
             setLoading(false);
         }
 
-        if(client) getUsers()
-    }, []);
+        getUsers();
+    }, [client]);
 
     if(error) {
         return (

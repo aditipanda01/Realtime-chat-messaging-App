@@ -22,25 +22,44 @@ const ChannelNameInput = ({ channelName = '', setChannelName }) => {
 
 const CreateChannel = ({ createType, setIsCreating }) => {
     const { client, setActiveChannel } = useChatContext();
-    const [selectedUsers, setSelectedUsers] = useState([client.userID || ''])
+    const [selectedUsers, setSelectedUsers] = useState([]);
     const [channelName, setChannelName] = useState('');
+    const [error, setError] = useState('');
 
     const createChannel = async (e) => {
         e.preventDefault();
+        setError('');
 
         try {
-            const newChannel = await client.channel(createType, channelName, {
-                name: channelName, members: selectedUsers
+            // Ensure the current user is included in the members list
+            const members = [...new Set([...selectedUsers, client.userID])];
+            
+            // For team channels, require a name
+            if (createType === 'team' && !channelName.trim()) {
+                setError('Please enter a channel name');
+                return;
+            }
+
+            // For messaging channels, require at least one other user
+            if (createType === 'messaging' && selectedUsers.length === 0) {
+                setError('Please select at least one user to message');
+                return;
+            }
+
+            const newChannel = await client.channel(createType, channelName || undefined, {
+                name: channelName || undefined, 
+                members: members
             });
 
             await newChannel.watch();
 
             setChannelName('');
             setIsCreating(false);
-            setSelectedUsers([client.userID]);
+            setSelectedUsers([]);
             setActiveChannel(newChannel);
         } catch (error) {
-            console.log(error);
+            console.error('Error creating channel:', error);
+            setError('Failed to create channel. Please try again.');
         }
     }
 
@@ -52,6 +71,20 @@ const CreateChannel = ({ createType, setIsCreating }) => {
             </div>
             {createType === 'team' && <ChannelNameInput channelName={channelName} setChannelName={setChannelName}/>}
             <UserList setSelectedUsers={setSelectedUsers} />
+            
+            {error && (
+                <div style={{ 
+                    color: 'red', 
+                    padding: '10px 20px', 
+                    fontSize: '14px',
+                    backgroundColor: '#ffe6e6',
+                    margin: '10px 20px',
+                    borderRadius: '4px'
+                }}>
+                    {error}
+                </div>
+            )}
+            
             <div className="create-channel__button-wrapper" onClick={createChannel}>
                 <p>{createType === 'team' ? 'Create Channel' : 'Create Message Group'}</p>
             </div>
